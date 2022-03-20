@@ -29,6 +29,13 @@ def insert_users(user_id:int,user_first_name:str,user_last_name:str,username:str
     conn.close()
     return
 
+def insert_id_status(user_id:int,enable_report:bool,enable_admin:bool):
+    conn = sqlite3.connect('health.db', check_same_thread=False)
+    conn.execute(f'''INSERT INTO id_status (user_id,enable_report,enable_admin) VALUES ({user_id},{enable_report},{enable_admin})''')
+    conn.commit()
+    conn.close()
+    return
+
 def insert_FIO(user_id:int,user_first_name:str,user_last_name:str,username:str):
     conn = sqlite3.connect('health.db', check_same_thread=False)
     conn.execute(f'''INSERT INTO FIO (user_id,first_name,last_name,patronymic_name) VALUES ({user_id},'{user_first_name}','{user_last_name}','{username}')''')
@@ -105,11 +112,37 @@ def get_list():
 
 def get_list_all():
     conn = sqlite3.connect('health.db', check_same_thread=False)
-    list_all = conn.execute(f'''Select users.id,FIO.first_name,FIO.last_name,id_status.enable_report
+    list_all = conn.execute(f'''Select users.id,FIO.first_name,FIO.last_name,
+                                case 
+                                    when id_status.enable_report then 'в отчете'
+                                    else 'вне отчета'
+                                end enable_report,
+                                case 
+                                    when id_status.enable_admin then 'админ'
+                                    else 'пользователь'
+                                end enable_admin
                                 from users
                                     left join FIO on FIO.user_id=users.user_id
                                     left join id_status on id_status.user_id=users.user_id
                                 order by users.id''').fetchall()
     conn.close()
     return list_all
+def get_user_id(id:int):
+    conn = sqlite3.connect('health.db', check_same_thread=False)
+    user = conn.execute(f'SELECT user_id FROM Users WHERE id ={id}').fetchone()
+    conn.close()
+    return user[0]
 
+def update_report(user_id:int,status:bool):
+    conn = sqlite3.connect('health.db', check_same_thread=False)
+    conn.execute(f'''UPDATE id_status SET enable_report={status} WHERE user_id={user_id}''')
+    conn.commit()
+    conn.close()
+    return
+
+def update_admin(user_id:int,status:bool):
+    conn = sqlite3.connect('health.db', check_same_thread=False)
+    conn.execute(f'''UPDATE id_status SET enable_admin={status} WHERE user_id={user_id}''')
+    conn.commit()
+    conn.close()
+    return

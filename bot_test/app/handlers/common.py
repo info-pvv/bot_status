@@ -1,7 +1,7 @@
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text, IDFilter
-from app.handlers.db import get_users,insert_users,update_users,insert_FIO,get_user_status_admin
+from app.handlers.db import get_users,insert_users,update_users,insert_FIO,get_user_status_admin,insert_id_status
 
 available_choise = {"Здоровье":1,"Админка":0,"Отчет по сотрудникам":0}
 available_admin = {"Исключить из отчета":0,"Включить в отчет":0,"Дать админ. права":0,"Забрать админ права":0,"Выйти":0}
@@ -21,6 +21,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
     if (user_1 == None):
         insert_users(message.from_user.id,message.from_user.first_name,message.from_user.last_name,message.from_user.username)
         insert_FIO(message.from_user.id,message.from_user.first_name,message.from_user.last_name,message.from_user.username)
+        insert_id_status(message.from_user.id,False,False)
     else:
         update_users(message.from_user.id,message.from_user.first_name,message.from_user.last_name,message.from_user.username)
     keyboard = create_keyboard(message.from_user.id,available_choise)
